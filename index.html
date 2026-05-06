@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Git — How It Works</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --border: #e8e6e0;
+  --text: #1a1917;
+  --muted: #999490;
+  --pink: #e05568;
+  --pink-light: #fce8eb;
+  --blue: #5b7fe0;
+  --blue-light: #eaeefc;
+  --gold: #c48a08;
+  --gold-light: #fdf4e0;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); }
+
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* HEADER */
+.header {
+  padding: 24px 36px 20px; border-bottom: 1px solid var(--border);
+  background: var(--surface); display: flex; align-items: center;
+  justify-content: space-between; gap: 16px;
+}
+.header-left h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.4px; }
+.header-left p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.mode-switcher { display: flex; gap: 6px; }
+.mode-btn {
+  padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--border);
+  font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+  background: var(--bg); color: var(--muted); transition: all 0.18s;
+}
+.mode-btn:hover { color: var(--text); border-color: #ccc; }
+.mode-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+/* BODY */
+.body { flex: 1; display: flex; overflow: hidden; }
+.content { flex: 1; overflow-y: auto; padding: 32px 36px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ZONES */
+.zones-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: visible;
+}
+.zones-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.zone-cell {
+  padding: 22px 14px 18px; display: flex; flex-direction: column;
+  align-items: center; gap: 10px; position: relative;
+  border-right: 1px solid var(--border); transition: background 0.2s;
+}
+.zone-cell:last-child { border-right: none; }
+.zone-cell {
+  transition: background 0.2s, border-bottom-color 0.2s, box-shadow 0.2s;
+}
+
+/* tooltip */
+.ztip {
+  display: none; position: absolute; bottom: calc(100% + 10px); left: 50%;
+  transform: translateX(-50%); background: #1a1917; color: #fff;
+  font-size: 12px; line-height: 1.5; padding: 8px 12px; border-radius: 8px;
+  width: 190px; text-align: center; z-index: 100; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  pointer-events: none;
+}
+.ztip::after {
+  content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  border:5px solid transparent; border-top-color:#1a1917;
+}
+.zone-cell:hover .ztip { display: block; }
+
+.zone-name { font-size: 13px; font-weight: 600; text-align: center; }
+.zone-sub  { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.4; }
+
+.zones-legend {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+  border-top: 1px solid var(--border);
+}
+.legend-cell {
+  padding: 7px 10px; text-align: center; font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
+  border-right: 1px solid var(--border);
+}
+.legend-cell:last-child { border-right: none; }
+.legend-cell.remote { color: #b040a0; }
+
+/* INTRO / CONCEPTS / BEST PRACTICES CARDS */
+.intro-card, .concepts-card, .bp-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.card-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted);
+  padding: 14px 22px 0;
+}
+.intro-body { display: grid; grid-template-columns: 1fr 1fr; }
+.intro-col { padding: 14px 22px 18px; border-right: 1px solid var(--border); }
+.intro-col:last-child { border-right: none; }
+.intro-term {
+  font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; margin-bottom: 6px;
+}
+.intro-term.git { color: var(--pink); }
+.intro-term.github { color: var(--blue); }
+.intro-desc { font-size: 13.5px; line-height: 1.65; color: var(--text); }
+.intro-foot {
+  padding: 11px 22px; font-size: 12.5px; color: var(--muted);
+  font-style: italic; border-top: 1px solid var(--border); background: var(--bg);
+}
+.concepts-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.concept-cell { padding: 14px 18px 16px; border-right: 1px solid var(--border); }
+.concept-cell:last-child { border-right: none; }
+.concept-term { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+.concept-def { font-size: 12.5px; line-height: 1.55; color: var(--text); margin-bottom: 6px; }
+.concept-why { font-size: 11.5px; font-style: italic; color: var(--muted); line-height: 1.5; }
+.bp-card {
+  border-left: 4px solid var(--gold);
+  display: flex; gap: 14px; padding: 16px 22px; align-items: flex-start;
+}
+.bp-mark { font-size: 22px; color: var(--gold); line-height: 1; flex-shrink: 0; margin-top: 1px; }
+.bp-body { flex: 1; }
+.bp-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.bp-text { font-size: 13px; line-height: 1.65; color: var(--text); }
+.bp-text code {
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  background: var(--bg); padding: 1px 6px; border-radius: 4px;
+}
+
+/* COMMANDS CARD */
+.cmds-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+}
+.group-hdr {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted); padding: 14px 22px 6px;
+}
+.cmd-row { display: flex; flex-direction: column; border-top: 1px solid var(--border); cursor: pointer; }
+.cmd-row:first-of-type { border-top: none; }
+.cmd-row-hdr {
+  display: flex; align-items: center; gap: 10px; padding: 11px 22px;
+  transition: background 0.15s;
+}
+.cmd-row-hdr:hover, .cmd-row.open .cmd-row-hdr { background: var(--bg); }
+.cmd-row.wt-active .cmd-row-hdr { background: var(--bg); }
+
+.cmd-tag {
+  font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+  padding: 4px 11px; border-radius: 6px; flex-shrink: 0;
+}
+.cmd-tag.pink { background: var(--pink-light); color: var(--pink); }
+.cmd-tag.blue { background: var(--blue-light); color: var(--blue); }
+.cmd-tag.gold { background: var(--gold-light); color: var(--gold); }
+
+.arrow-track {
+  flex: 1; display: flex; align-items: center; gap: 0; position: relative;
+  min-width: 0; overflow: hidden; height: 20px;
+}
+.track-line { flex:1; height: 2px; border-radius: 1px; opacity: 0.25; }
+.track-line.pink { background: var(--pink); }
+.track-line.blue { background: var(--blue); }
+.track-line.gold { background: var(--gold); }
+.ah { width:0; height:0; flex-shrink:0; border-top:5px solid transparent; border-bottom:5px solid transparent; }
+.ah.r.pink { border-left:9px solid var(--pink); }
+.ah.r.blue { border-left:9px solid var(--blue); }
+.ah.r.gold { border-left:9px solid var(--gold); }
+.ah.l.pink { border-right:9px solid var(--pink); }
+.ah.l.blue { border-right:9px solid var(--blue); }
+.ah.l.gold { border-right:9px solid var(--gold); }
+
+.fdot {
+  position:absolute; width:8px; height:8px; border-radius:50%;
+  top:50%; margin-top:-4px; pointer-events:none;
+}
+.fdot.pink { background:var(--pink); }
+.fdot.blue { background:var(--blue); }
+.fdot.gold { background:var(--gold); }
+.fdot.gr { animation: gr 0.65s ease forwards; }
+.fdot.gl { animation: gl 0.65s ease forwards; }
+@keyframes gr { from{left:0;opacity:1} to{left:100%;opacity:0} }
+@keyframes gl { from{right:0;left:auto;opacity:1} to{right:100%;left:auto;opacity:0} }
+
+.cmd-lbl { font-size:11px; color:var(--muted); white-space:nowrap; flex-shrink:0; }
+.cmd-short-lbl { font-size:12px; color:var(--muted); flex-shrink:0; }
+.caret { font-size:14px; color:var(--muted); margin-left:4px; flex-shrink:0; transition:transform 0.2s; }
+.cmd-row.open .caret { transform:rotate(90deg); }
+
+.cmd-detail {
+  padding:14px 22px 18px; background:var(--bg); border-top:1px solid var(--border);
+  animation: sd 0.18s ease;
+}
+@keyframes sd { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.eli5-lbl { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.eli5-txt { font-size:14px; line-height:1.7; }
+.eg-code {
+  display:inline-block; margin-top:10px;
+  font-family:'DM Mono',monospace; font-size:12px;
+  background:var(--surface); border:1px solid var(--border);
+  padding:6px 12px; border-radius:6px; color:var(--muted); line-height:1.8;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width:292px; flex-shrink:0; border-left:1px solid var(--border);
+  background:var(--surface); display:flex; flex-direction:column;
+  padding:28px 24px; gap:20px; overflow-y:auto;
+}
+.sb-empty { color:var(--muted); font-size:14px; text-align:center; margin:auto; line-height:1.8; }
+.sb-name { font-family:'DM Mono',monospace; font-size:24px; font-weight:500; }
+.sb-short { font-size:13px; color:var(--muted); margin-top:3px; }
+.sb-div { height:1px; background:var(--border); }
+.sb-eli5 { font-size:14px; line-height:1.75; }
+.sb-code-box { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px 16px; }
+.sb-code-lbl { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.sb-code { font-family:'DM Mono',monospace; font-size:13px; line-height:1.8; }
+.sb-flow { font-size:12px; color:var(--muted); }
+.sb-flow span { font-weight:600; color:var(--text); }
+
+/* WALKTHROUGH BAR */
+.wt-bar {
+  background:var(--surface); border-top:1px solid var(--border);
+  padding:14px 36px; display:flex; align-items:center; gap:14px;
+}
+.wt-title { font-size:13px; font-weight:600; white-space:nowrap; }
+.wt-track { flex:1; display:flex; gap:5px; }
+.wt-pip { height:5px; border-radius:3px; flex:1; background:var(--border); cursor:pointer; transition:background 0.2s; }
+.wt-pip.done { background:var(--text); }
+.wt-pip.curr { background:var(--blue); }
+.wt-count { font-size:12px; color:var(--muted); white-space:nowrap; }
+.wt-btn {
+  padding:7px 16px; border-radius:8px; border:1.5px solid var(--border);
+  font-family:inherit; font-size:13px; font-weight:500; cursor:pointer;
+  background:var(--bg); transition:all 0.15s; color:var(--text);
+}
+.wt-btn:disabled { opacity:0.35; cursor:default; }
+.wt-btn:not(:disabled):hover { background:var(--text); color:#fff; border-color:var(--text); }
+.wt-btn.primary { background:var(--text); color:#fff; border-color:var(--text); }
+.wt-btn.primary:not(:disabled):hover { opacity:0.8; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const ZONES = [
+  { id:'wd', label:'Working Directory', sub:'Your files on disk',      fill:'#fefae8', stroke:'#c9a830', tip:'Your normal folder — where you write and edit code. Nothing is saved to Git history yet.' },
+  { id:'sa', label:'Staging Area',      sub:'Ready to commit',         fill:'#e5f7fe', stroke:'#34a0c8', tip:'A holding zone. You decide exactly which changes to include before creating a save point.' },
+  { id:'lr', label:'Local Repo',        sub:'Your save history',       fill:'#e5feeb', stroke:'#34c857', tip:'Git\'s private history on your own computer — every commit you\'ve ever made lives here.' },
+  { id:'rr', label:'Remote Repo',       sub:'Shared online copy',      fill:'#fde5f8', stroke:'#c834a8', tip:'The project on GitHub/GitLab your whole team can access. Nothing goes here until you push.' },
+];
+
+const CMDS = [
+  { id:'add',      label:'git add',      color:'pink', dir:'r', from:'wd', to:'sa',
+    short:'Stage your changes',
+    eli5:'Imagine packing a box before shipping. git add lets you pick which files go in the box. You\'re not sending it yet — just deciding what\'s included.',
+    eg:'git add index.html\ngit add .         (adds everything)' },
+  { id:'commit',   label:'git commit',   color:'pink', dir:'r', from:'sa', to:'lr',
+    short:'Create a save point',
+    eli5:'You seal the box and write a label on it. git commit takes everything you staged and creates a permanent, named snapshot in your project\'s history.',
+    eg:'git commit -m "Add homepage layout"' },
+  { id:'push',     label:'git push',     color:'pink', dir:'r', from:'lr', to:'rr',
+    short:'Upload to the cloud',
+    eli5:'You send your sealed, labeled boxes to a shared warehouse (GitHub). Your team can now see your work online. Nothing leaves your machine until you do this.',
+    eg:'git push origin main' },
+  { id:'fetch',    label:'git fetch',    color:'blue', dir:'l', from:'rr', to:'lr',
+    short:'Download without applying',
+    eli5:'You peek inside the warehouse and bring a copy of new boxes to your local storage — but you don\'t unpack them yet. Just safely downloading to check what\'s new.',
+    eg:'git fetch origin' },
+  { id:'merge',    label:'git merge',    color:'blue', dir:'l', from:'lr', to:'wd',
+    short:'Combine histories',
+    eli5:'Now you unpack the boxes and mix your teammate\'s changes into your own files. Git is smart and combines edits from different people automatically.',
+    eg:'git merge origin/main' },
+  { id:'pull',     label:'git pull',     color:'blue', dir:'l', from:'rr', to:'wd',
+    short:'Fetch + Merge in one step',
+    eli5:'A shortcut: grab the latest from the cloud AND put it straight in my files. It runs git fetch and git merge back-to-back so you don\'t have to.',
+    eg:'git pull origin main' },
+  { id:'clone',    label:'git clone',    color:'gold', dir:'l', from:'rr', to:'lr',
+    short:'Copy a project to your machine',
+    eli5:'You\'re brand new to a project. git clone downloads everything — all files and all history — from the shared warehouse onto your computer. You only do this once.',
+    eg:'git clone https://github.com/user/repo.git' },
+  { id:'checkout', label:'git checkout', color:'gold', dir:'l', from:'lr', to:'wd',
+    short:'Switch branches or restore files',
+    eli5:'Your project has parallel timelines called branches. git checkout lets you jump between them, or bring a specific old file back from a past save point.',
+    eg:'git checkout main\ngit checkout -b new-feature' },
+];
+
+const GROUPS = [
+  { label:'Sending changes',    ids:['add','commit','push'] },
+  { label:'Receiving changes',  ids:['fetch','merge','pull'] },
+  { label:'Getting started',    ids:['clone','checkout'] },
+];
+
+const WT_ORDER = ['clone','add','commit','push','fetch','merge','pull','checkout'];
+
+/* SVG Cylinder — clean, no CSS pseudo-element issues */
+function Cylinder({ fill, stroke, active }) {
+  return (
+    <svg width="54" height="54" viewBox="0 0 54 54" fill="none"
+      style={{filter: active ? 'drop-shadow(0 0 6px rgba(0,0,0,0.12))' : 'none', transition:'filter 0.2s'}}>
+      {/* barrel */}
+      <rect x="3" y="14" width="48" height="28" fill={fill} stroke={stroke} strokeWidth="2"/>
+      {/* bottom ellipse */}
+      <ellipse cx="27" cy="42" rx="24" ry="7" fill={fill} stroke={stroke} strokeWidth="2"/>
+      {/* top ellipse (drawn last = on top) */}
+      <ellipse cx="27" cy="14" rx="24" ry="7" fill={fill} stroke={stroke} strokeWidth="2"/>
+    </svg>
+  );
+}
+
+/* Animated flow dot */
+function FlowDot({ color, dir, onDone }) {
+  return <span className={`fdot ${color} ${dir==='r'?'gr':'gl'}`} onAnimationEnd={onDone} />;
+}
+
+function CmdRow({ cmd, isOpen, onToggle, isWtActive }) {
+  const [dotKey, setDotKey] = useState(null);
+  const z = ZONES;
+  const fromZ = z.find(x=>x.id===cmd.from);
+  const toZ   = z.find(x=>x.id===cmd.to);
+  const flowLbl = cmd.dir==='r'
+    ? `${fromZ.label.split(' ')[0]} → ${toZ.label.split(' ')[0]}`
+    : `${fromZ.label.split(' ')[0]} ← ${toZ.label.split(' ')[0]}`;
+
+  const handleClick = () => {
+    setDotKey(Date.now());
+    onToggle(cmd);
+  };
+
+  return (
+    <div className={`cmd-row ${isOpen?'open':''} ${isWtActive?'wt-active':''}`}>
+      <div className="cmd-row-hdr" onClick={handleClick}>
+        <span className={`cmd-tag ${cmd.color}`}>{cmd.label}</span>
+        <div className="arrow-track">
+          {cmd.dir==='r' ? (
+            <><div className={`track-line ${cmd.color}`}/>
+              {dotKey && <FlowDot key={dotKey} color={cmd.color} dir="r" onDone={()=>setDotKey(null)}/>}
+              <div className={`ah r ${cmd.color}`}/></>
+          ) : (
+            <><div className={`ah l ${cmd.color}`}/>
+              <div className={`track-line ${cmd.color}`}/>
+              {dotKey && <FlowDot key={dotKey} color={cmd.color} dir="l" onDone={()=>setDotKey(null)}/>}
+            </>
+          )}
+        </div>
+        <span className="cmd-lbl">{flowLbl}</span>
+        <span className="cmd-short-lbl" style={{marginLeft:8}}>— {cmd.short}</span>
+        <span className="caret">›</span>
+      </div>
+      {isOpen && (
+        <div className="cmd-detail">
+          <div className="eli5-lbl">Explain Like I'm 5</div>
+          <div className="eli5-txt">{cmd.eli5}</div>
+          <div className="eg-code">{cmd.eg.split('\n').map((l,i)=><div key={i}>{l}</div>)}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Sidebar({ cmd, mode }) {
+  if (!cmd) return (
+    <aside className="sidebar">
+      <div className="sb-empty">
+        {mode==='explore'
+          ? '← Click any command to see a plain-English explanation'
+          : 'Use the controls below to step through each Git command'}
+      </div>
+    </aside>
+  );
+  const fromZ = ZONES.find(z=>z.id===cmd.from);
+  const toZ   = ZONES.find(z=>z.id===cmd.to);
+  const flowTxt = cmd.dir==='r'
+    ? `${fromZ.label} → ${toZ.label}`
+    : `${toZ.label} ← ${fromZ.label}`;
+  return (
+    <aside className="sidebar">
+      <div>
+        <div className="sb-name" style={{color:`var(--${cmd.color})`}}>{cmd.label}</div>
+        <div className="sb-short">{cmd.short}</div>
+      </div>
+      <div className="sb-div"/>
+      <div>
+        <div className="eli5-lbl">Explain Like I'm 5</div>
+        <div className="sb-eli5">{cmd.eli5}</div>
+      </div>
+      <div className="sb-code-box">
+        <div className="sb-code-lbl">Example</div>
+        <div className="sb-code">{cmd.eg.split('\n').map((l,i)=><div key={i}>{l}</div>)}</div>
+      </div>
+      <div className="sb-flow">Data moves: <span>{flowTxt}</span></div>
+    </aside>
+  );
+}
+
+function App() {
+  const [mode, setMode]   = useState('explore');
+  const [openId, setOpenId] = useState(null);
+  const [wtStep, setWtStep] = useState(0);
+
+  const wtCmds = WT_ORDER.map(id => CMDS.find(c=>c.id===id));
+
+  const activeCmd = mode==='explore'
+    ? (openId ? CMDS.find(c=>c.id===openId) : null)
+    : wtCmds[wtStep];
+
+  const activeZones = activeCmd ? [activeCmd.from, activeCmd.to] : [];
+
+  const switchMode = m => { setMode(m); setOpenId(null); setWtStep(0); };
+  const toggleCmd  = cmd => { if (mode==='explore') setOpenId(p => p===cmd.id ? null : cmd.id); };
+
+  return (
+    <div className="app">
+      <header className="header">
+        <div className="header-left">
+          <h1>How Git Works</h1>
+          <p>An interactive guide for complete beginners</p>
+        </div>
+        <div className="mode-switcher">
+          <button className={`mode-btn ${mode==='explore'?'active':''}`} onClick={()=>switchMode('explore')}>Explore Freely</button>
+          <button className={`mode-btn ${mode==='walkthrough'?'active':''}`} onClick={()=>switchMode('walkthrough')}>Step-by-Step</button>
+        </div>
+      </header>
+
+      <div className="body">
+        <div className="content">
+
+          {/* GIT vs. GITHUB */}
+          <div className="intro-card">
+            <div className="card-label">Start here — Git vs. GitHub</div>
+            <div className="intro-body">
+              <div className="intro-col">
+                <div className="intro-term git">Git</div>
+                <div className="intro-desc">A tool that runs on your computer. It tracks every change you make to your files and remembers every save point. Works with or without the internet.</div>
+              </div>
+              <div className="intro-col">
+                <div className="intro-term github">GitHub</div>
+                <div className="intro-desc">A website that stores Git projects online so your team can share them. Think "Dropbox for code" — but built specifically around Git.</div>
+              </div>
+            </div>
+            <div className="intro-foot">You use Git locally. You use GitHub to collaborate. Related, but not the same thing.</div>
+          </div>
+
+          {/* KEY CONCEPTS */}
+          <div className="concepts-card">
+            <div className="card-label">Key concepts</div>
+            <div className="concepts-grid">
+              <div className="concept-cell">
+                <div className="concept-term">Branch</div>
+                <div className="concept-def">A parallel copy of your project where you can work without affecting the main version.</div>
+                <div className="concept-why">Lets you experiment safely.</div>
+              </div>
+              <div className="concept-cell">
+                <div className="concept-term">Commit</div>
+                <div className="concept-def">A labeled save point of your changes — a snapshot with a message attached.</div>
+                <div className="concept-why">Git history is just a chain of commits.</div>
+              </div>
+              <div className="concept-cell">
+                <div className="concept-term">Pull Request (PR)</div>
+                <div className="concept-def">A GitHub feature: "please review my branch and merge it into main."</div>
+                <div className="concept-why">Where code review happens.</div>
+              </div>
+              <div className="concept-cell">
+                <div className="concept-term">Merge</div>
+                <div className="concept-def">Combining the changes from one branch into another.</div>
+                <div className="concept-why">How a finished branch gets back into main.</div>
+              </div>
+            </div>
+          </div>
+
+          {/* BEST PRACTICES */}
+          <div className="bp-card">
+            <div className="bp-mark">⚠</div>
+            <div className="bp-body">
+              <div className="bp-title">Don't commit directly to <code>main</code>.</div>
+              <div className="bp-text">For anything real, create a branch, open a pull request, and merge after review. <code>main</code> should reflect code that's been reviewed — not your in-progress work.</div>
+            </div>
+          </div>
+
+          {/* ZONE DIAGRAM */}
+          <div className="zones-card">
+            <div className="zones-row">
+              {ZONES.map(z => {
+                const isActive = activeZones.includes(z.id) && activeCmd;
+                const cellStyle = isActive ? {
+                  background: `var(--${activeCmd.color}-light)`,
+                  borderBottom: `3px solid var(--${activeCmd.color})`,
+                  paddingBottom: '15px'
+                } : {};
+                return (
+                  <div key={z.id} className={`zone-cell ${isActive?'zone-active':''}`} style={cellStyle}>
+                    <div className="ztip">{z.tip}</div>
+                    <Cylinder fill={z.fill} stroke={z.stroke} active={isActive}/>
+                    <div className="zone-name"
+                      style={isActive ? {color:`var(--${activeCmd.color})`} : {}}>
+                      {z.label}
+                    </div>
+                    <div className="zone-sub">{z.sub}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="zones-legend">
+              <div className="legend-cell">Local</div>
+              <div className="legend-cell">Local</div>
+              <div className="legend-cell">Local</div>
+              <div className="legend-cell remote">Remote</div>
+            </div>
+          </div>
+
+          <div style={{fontSize:12,color:'var(--muted)',textAlign:'center',marginTop:-6}}>
+            Hover a zone for details &nbsp;·&nbsp;
+            {mode==='explore' ? 'Click any command below to explore' : 'Use the walkthrough controls at the bottom'}
+          </div>
+
+          {/* COMMANDS */}
+          <div className="cmds-card">
+            {GROUPS.map(g => (
+              <div key={g.label}>
+                <div className="group-hdr">{g.label}</div>
+                {g.ids.map(id => {
+                  const cmd = CMDS.find(c=>c.id===id);
+                  return (
+                    <CmdRow
+                      key={id} cmd={cmd}
+                      isOpen={mode==='explore' && openId===id}
+                      isWtActive={mode==='walkthrough' && activeCmd?.id===id}
+                      onToggle={toggleCmd}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+        </div>
+
+        <Sidebar cmd={activeCmd} mode={mode}/>
+      </div>
+
+      {mode==='walkthrough' && (
+        <div className="wt-bar">
+          <span className="wt-title">Walkthrough</span>
+          <div className="wt-track">
+            {wtCmds.map((c,i) => (
+              <div key={c.id} className={`wt-pip ${i<wtStep?'done':i===wtStep?'curr':''}`}
+                onClick={()=>setWtStep(i)} title={c.label}/>
+            ))}
+          </div>
+          <span className="wt-count">{wtStep+1} / {wtCmds.length} — <strong>{wtCmds[wtStep].label}</strong></span>
+          <button className="wt-btn" onClick={()=>setWtStep(s=>s-1)} disabled={wtStep===0}>← Prev</button>
+          <button className="wt-btn primary" onClick={()=>setWtStep(s=>s+1)} disabled={wtStep===wtCmds.length-1}>
+            {wtStep===wtCmds.length-1 ? 'Done ✓' : 'Next →'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
