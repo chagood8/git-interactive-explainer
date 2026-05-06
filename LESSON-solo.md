@@ -12,7 +12,7 @@ You're going to clone a real repo, make a real change with the help of a coding 
 - [ ] Terminal open (Windows Terminal, macOS Terminal, or VS Code's built-in terminal — all fine)
 - [ ] `git --version` returns 2.40+
 - [ ] `gh --version` works, and `gh auth status` says you're logged in
-- [ ] VS Code installed, with **Claude Code** signed in
+- [ ] VS Code installed, with your **coding agent** (Claude Code, Codex, Cursor, etc.) signed in
 - [ ] You've picked a folder to clone into. Suggestion: `cd ~` or `cd Documents`
 
 ---
@@ -81,9 +81,9 @@ You should now see `On branch color-change-XX`.
 
 ---
 
-## Step 5 — Let Claude Code make the change
+## Step 5 — Let your coding agent make the change
 
-Open the Claude Code chat panel in VS Code. Paste this prompt:
+Open your coding agent's chat panel in VS Code. Paste this prompt:
 
 > In `index.html`, change the `--pink` CSS variable (currently `#e05568`) to teal (`#0d9488`). Update only the `--pink` definition in the `:root` block — leave `--pink-light` alone. Show me the diff before applying.
 
@@ -195,6 +195,6 @@ Plus the two "one step further" commands:
 
 **`gh: command not found`** — install with `brew install gh` (Mac) or `winget install GitHub.cli` (Windows), then `gh auth login`.
 
-**Claude Code edited the wrong color variable** — undo with `git restore index.html` and try a more specific prompt.
+**Your coding agent edited the wrong color variable** — undo with `git restore index.html` and try a more specific prompt.
 
 **Browser still shows pink after the agent edit** — hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac).

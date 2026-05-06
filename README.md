@@ -17,4 +17,4 @@ Both lessons cover the 6 commands from Phase 0 slide 7 (`clone`, `status`, `add`
 
 ## What students change
 
-The lessons walk you through editing one CSS color variable in `index.html` (using Claude Code as the coding agent) and shipping it back through GitHub. Tiny change, full pipeline.
+The lessons walk you through editing one CSS color variable in `index.html` using your coding agent (Claude Code, Codex, Cursor, or similar) and shipping it back through GitHub. Tiny change, full pipeline.

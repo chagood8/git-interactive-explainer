@@ -69,9 +69,9 @@ Use **your initials**, then a dash, then **the variable you claimed**. Examples:
 
 ---
 
-## Step 4 — Have Claude Code make your change
+## Step 4 — Have your coding agent make your change
 
-Open Claude Code in VS Code. Customize this prompt with **your variable** and **a new color of your choice** (any valid CSS color or hex):
+Open your coding agent in VS Code. Customize this prompt with **your variable** and **a new color of your choice** (any valid CSS color or hex):
 
 > In `index.html`, change the `--YOUR_VARIABLE` CSS variable to `#YOUR_NEW_COLOR`. Update only that one variable definition in the `:root` block. Show the diff before applying.
 
