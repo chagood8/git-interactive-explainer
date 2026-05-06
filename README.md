@@ -15,6 +15,8 @@ This repo doubles as the demo target for two hands-on lessons in **Phase 0** of 
 
 Both lessons cover the 6 commands from Phase 0 slide 7 (`clone`, `status`, `add`, `commit`, `push`, `pull`) plus `git switch -c` for branching and `gh pr create` for opening pull requests.
 
+**Workflow rules** (both lessons): students never push to `main` and never merge their own PRs. The instructor walks through the open PR queue at https://github.com/chagood8/git-interactive-explainer/pulls and merges from the GitHub UI on screen — that's the teaching moment.
+
 ## What students change
 
 The lessons walk you through editing one CSS color variable in `index.html` using your coding agent (Claude Code, Codex, Cursor, or similar) and shipping it back through GitHub. Tiny change, full pipeline.

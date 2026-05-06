@@ -1,9 +1,18 @@
 # Group Lesson: Everyone in the Same Repo
 
-This is the same loop as the [solo lesson](./LESSON-solo.md), but with a twist: **everyone in the room is working on the same repo at the same time.** That's where `git pull` finally earns its keep — by the time you finish your change, three of your classmates will have merged theirs.
+This is the same loop as the [solo lesson](./LESSON-solo.md), but with a twist: **everyone in the room is working on the same repo at the same time.** That's where `git pull` finally earns its keep — by the time your instructor merges the class's PRs at the end of the session, ten different changes will land on `main` at once and you'll pull them all down.
 
 **Time:** ~25 minutes including review.
 **You'll use all 6 slide commands plus** `git switch -c`, `gh pr create`, and a peek at peer review.
+
+---
+
+## Two rules — read these first
+
+1. **Never push directly to `main`.** All work happens on a branch you create.
+2. **Never merge a PR — not yours, not anyone else's.** Your instructor merges every PR from the GitHub UI on screen, so the whole class can see the queue and the merge flow together.
+
+These are not arbitrary rules. They mirror how every real engineering team operates: the author opens the PR, someone else merges it. Building that habit on a tiny color change is far cheaper than building it on a load-bearing change later.
 
 ---
 
@@ -49,7 +58,7 @@ git status
 git pull
 ```
 
-**Why we pull immediately:** in a group repo, `main` may have already moved since you cloned. Always pull before you start work. Always.
+**Why we pull immediately:** in a group repo, `main` may have already moved since you cloned. Always pull `main` before you start work. Always.
 
 ---
 
@@ -66,6 +75,12 @@ Use **your initials**, then a dash, then **the variable you claimed**. Examples:
 - `els-border`
 
 **Why naming matters in a group:** if two people both make a branch called `color-change`, the second person to push gets blocked. Initials + element makes collisions impossible.
+
+Confirm:
+```bash
+git status
+```
+You should see `On branch XX-VARIABLE`. **If it still says `main`, stop and re-run the switch command.** Editing files while on `main` is rule #1 broken.
 
 ---
 
@@ -97,19 +112,21 @@ Use a real commit message — your classmates will read it during PR review.
 git push -u origin XX-VARIABLE
 ```
 
+> If you see `! [remote rejected] main -> main (protected branch)`, you tried to push from `main` instead of your branch. Run `git status`, get on your branch, push again.
+
 ---
 
-## Step 7 — Open a PR
+## Step 7 — Open a PR (and stop)
 
 ```bash
 gh pr create --fill --web
 ```
 
-In the browser, click **Create pull request**. **Don't merge yet.** Post the PR URL in the class chat.
+In the browser, click **Create pull request**. **Do not click Merge.** Post the PR URL in the class chat so your classmates can find it for review.
 
 ---
 
-## Step 8 — Review one classmate's PR
+## Step 8 — Review one classmate's PR (do not merge)
 
 Pick a PR from the chat that isn't yours. Open it on GitHub. Click the **Files changed** tab.
 
@@ -118,17 +135,28 @@ For each PR you review:
 - Did they only touch the variable they claimed?
 - Click **Review changes** → leave a one-line comment → choose **Approve**.
 
+**Approve, don't merge.** Approval is a signal to your instructor that the change looks good. Merging is a separate action that only the instructor takes.
+
 **Why:** Phase 3 will require this on every change. Better to build the muscle on a tiny color swap than the first time it's load-bearing.
 
 ---
 
-## Step 9 — Merge
+## Step 9 — Watch the instructor merge the queue
 
-Once your PR has at least one approval, merge it via the GitHub UI. **Confirm merge.**
+Your instructor will share their screen and open https://github.com/chagood8/git-interactive-explainer/pulls — every open PR from the class, all in one place. Then, one at a time:
+
+1. They open a PR.
+2. They walk through the diff and any review comments out loud.
+3. They click **Merge pull request** → **Confirm merge**.
+4. The PR's branch can be deleted from the UI button.
+
+This is the moment to ask questions. What does "Squash and merge" mean? Why might you delete a branch after merging? What happens if there's a conflict? This is the part of the workflow you'll spend the most time around in any real engineering job.
 
 ---
 
-## Step 10 — Pull main and see everyone's work
+## Step 10 — Pull `main` and see everyone's work
+
+Once the instructor has merged the batch, run:
 
 ```bash
 git switch main
@@ -147,14 +175,26 @@ Want to see what conflicts look like in safe conditions? Coordinate with one oth
 1. Both of you `git switch main && git pull` to start clean.
 2. Both of you `git switch -c <initials>-conflict-test`.
 3. Both edit the **exact same line** in `index.html` to different values.
-4. Commit and push your branch.
-5. The first person to merge their PR — fine, it goes through.
-6. The second person tries to merge — GitHub says "This branch has conflicts that must be resolved."
-7. Locally: `git switch main && git pull && git switch <your-conflict-branch> && git merge main`. Git will mark the conflict in `index.html` with `<<<<<<<`, `=======`, `>>>>>>>` markers.
-8. Edit the file to keep whichever value you want, remove the markers, then `git add index.html && git commit && git push`.
-9. The PR will now merge cleanly.
+4. Commit and push your branches; both open PRs.
+5. The instructor merges the first PR. Fine — it goes through.
+6. The instructor tries to merge the second PR. GitHub says "This branch has conflicts that must be resolved." The instructor leaves the PR open and tells the second author to resolve it locally.
+7. That author runs:
+   ```bash
+   git switch main
+   git pull
+   git switch <your-conflict-branch>
+   git merge main
+   ```
+   Git marks the conflict in `index.html` with `<<<<<<<`, `=======`, `>>>>>>>` markers.
+8. Edit the file to keep whichever value you want, remove the markers, then:
+   ```bash
+   git add index.html
+   git commit -m "Resolve conflict with main"
+   git push
+   ```
+9. The PR is now mergeable. The instructor merges it.
 
-This is the most common "git is scary" moment. Now it isn't.
+Conflict resolution is the most common "git is scary" moment. Now it isn't, and you've also seen exactly why letting a single human be the merger keeps the queue sane.
 
 ---
 
@@ -163,7 +203,7 @@ This is the most common "git is scary" moment. Now it isn't.
 | Command | Where |
 |---|---|
 | `git clone` | Step 1 |
-| `git status` | Steps 2, 5 |
+| `git status` | Steps 2, 3, 5 |
 | `git pull` | Steps 2, 10 (the meaningful one) |
 | `git add` | Step 5 |
 | `git commit -m` | Step 5 |
@@ -178,8 +218,10 @@ This is the most common "git is scary" moment. Now it isn't.
 
 **`remote: Permission to chagood8/git-interactive-explainer.git denied`** — you weren't added as a collaborator yet. Ping your instructor.
 
-**Two people claimed the same variable** — whoever pushed second gets a clean PR, the original change just gets overwritten. The board exists to prevent this.
+**`! [remote rejected] main -> main (protected branch)`** — you tried to push to `main`. Get on your branch first.
+
+**Two people claimed the same variable** — both will end up editing the same line, and one of you will have to resolve a conflict (see bonus section). The board exists to prevent this; check it before you start.
 
 **My PR shows hundreds of changes, not one line** — your branch is based on an old `main`. Run `git switch main && git pull && git switch YOUR-BRANCH && git merge main`, resolve any conflicts, push again.
 
-**The GitHub UI won't let me merge** — usually means a conflict, or the repo requires reviews and yours has zero. Get one classmate to approve.
+**I clicked Merge by mistake** — tell your instructor. They'll handle it. The teaching demo of seeing every PR get merged together still works for the rest.
