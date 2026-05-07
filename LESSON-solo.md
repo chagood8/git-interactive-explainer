@@ -1,18 +1,18 @@
 # Solo Lesson: Your First Real Git Loop
 
-You're going to clone a real repo, make a real change with the help of a coding agent, and hand it off so your instructor can push it and open the pull request live in front of the class. Every command below is copy-paste ready.
+You're going to clone a real repo, make a real change with the help of a coding agent, then **stop** and watch your instructor walk through what happens next — pushing a change, opening a pull request, merging it — using their own change as the demo. Every command below is copy-paste ready.
 
 **Time:** ~15 minutes.
-**You'll use 5 of the 6 slide commands** (`clone`, `status`, `add`, `commit`, `pull`) plus `git switch -c` to create a branch. You'll watch your instructor run the 6th — `git push` — and `gh pr create` on screen.
+**You'll run 5 of the 6 slide commands** (`clone`, `status`, `add`, `commit`, `pull`) plus `git switch -c` to create a branch. You'll watch your instructor run the 6th — `git push` — plus `gh pr create` and the merge, all live on screen.
 
 ---
 
 ## Two rules — read these first
 
-1. **You don't push in this lesson.** Cloning, branching, editing, and committing all stay on your machine. When you finish, you hand the branch name to your instructor and they push it on screen so the whole class sees the same PR queue.
-2. **You don't merge your own PR.** Once your instructor pushes your branch and opens the pull request, they review and merge from the GitHub UI in front of the class — that's the teaching moment.
+1. **You don't push in this lesson.** Cloning, branching, editing, and committing all stay on your machine. Your instructor will demo `git push` on screen using their own branch — you watch the command and the output.
+2. **You don't open or merge a PR either.** Same reason — your instructor walks through `gh pr create` and the merge button on their own change so the whole class sees the flow once, cleanly, without 30 PRs piling up.
 
-You'll see why this matters in the real world: in any team worth working on, the person who writes the change is not the person who merges it. We're building that habit on a tiny color change so you've already done it once before it matters.
+You'll see why this matters in the real world: in any team worth working on, push permissions are scoped tightly, and the person who writes the change is often not the person who merges it. We're building that habit on a tiny color change so you've already seen it once before it matters.
 
 ---
 
@@ -69,7 +69,7 @@ nothing to commit, working tree clean
 git pull
 ```
 
-If you just cloned, you'll see `Already up to date.` That's fine. If other students have had PRs merged since your clone, this brings their work down. **Always pull `main` before starting a new branch** — that one habit prevents 80% of merge conflicts.
+If you just cloned, you'll see `Already up to date.` That's fine — `main` hasn't moved since you grabbed it seconds ago. **Always pull `main` before starting a new branch** anyway — that one habit prevents 80% of merge conflicts in real-world repos where someone else may have merged something in the last five minutes.
 
 ---
 
@@ -154,31 +154,37 @@ Swap `[theme]` for whichever theme you picked, e.g. `Apply ocean color theme`.
 
 ---
 
-## Step 9 — Hand off to your instructor
+## Step 9 — Stop. Watch your instructor push.
 
-You're done with the typing part. Tell your instructor (in chat or out loud):
+You're done with the typing part. ✅ Sit back.
 
-> My branch is **`theme-XX`** and it's committed locally.
+Your instructor has been working on their own theme branch alongside the class — same steps you just did, on their machine. They're about to demo what comes next using **their** change, on screen:
 
-Your instructor will then push your branch to GitHub and open a pull request **on screen, in front of the class** — so you see `git push` and `gh pr create` in action without having to run them yourself this round.
+```bash
+git push -u origin theme-INSTRUCTOR
+```
 
-You're not a collaborator on this repo, which is why you can't push directly. That's also true on every real engineering team you'll join: push permissions are scoped tightly, and the people who can push aren't always the people writing the change. Watching it happen is the point.
-
-You're done with the active part of the lesson. ✅
+Watch the output. The branch is now on GitHub. **You're not a collaborator on this repo, which is why you can't push directly** — push permissions are scoped tightly on every real engineering team. Watching how it works once is the point.
 
 ---
 
-## Step 10 — Watch the merge
+## Step 10 — Watch the PR open and merge
 
-Once your instructor pushes a batch of branches and opens the PRs, https://github.com/chagood8/git-interactive-explainer/pulls fills up with everyone's work. Your instructor will walk through them one at a time — diff, comments, **Merge pull request**, **Confirm merge** — so the whole class sees the queue and the merge flow together.
+Your instructor will then run:
+
+```bash
+gh pr create --fill --web
+```
+
+That opens a pull request in their browser. They'll click **Create pull request**, walk through the **Files changed** tab so you see the diff, then click **Merge pull request → Confirm merge**.
 
 This is the moment to ask questions: What's "Squash and merge" vs. "Merge commit"? When would you delete a branch after merging? What if two PRs touch the same line? Phase 1 leans on this every day; better to ask now than the first time it's load-bearing.
 
 ---
 
-## Step 11 — Sync `main` and see your work land
+## Step 11 — Sync `main` and see the change land
 
-Once your instructor has merged the batch, come back to your terminal and run:
+Once your instructor has merged their PR, come back to your terminal and run:
 
 ```bash
 git switch main
@@ -186,9 +192,11 @@ git pull
 git log --oneline -10
 ```
 
-**This is where `git pull` finally does real work.** Your local `main` was behind GitHub's `main` because the merges happened on GitHub, not on your laptop. The pull brings everything down at once. You'll see your commit alongside your classmates' commits in the log — a real shared history.
+**This is where `git pull` finally does real work.** Your local `main` was behind GitHub's `main` because the merge happened on GitHub, not on your laptop. The pull brings the new commit down. You'll see your instructor's commit at the top of the log — a tiny but real demonstration that GitHub is the source of truth and your local copy catches up via `pull`.
 
-You ran the meaningful part of the professional git loop: clone → branch → change → commit → (instructor pushes, opens PR, merges) → pull. The two pieces you didn't run yourself are the two pieces a typical engineer also doesn't always run, since most teams gate them behind exactly the kind of review you just watched.
+Your own commit, by the way, is still sitting on your local `theme-XX` branch. It never went anywhere — and that's fine. It's a learning artifact. `git switch theme-XX && git log` will show it any time you want to see it.
+
+You ran the writing half of the loop yourself. You watched the shipping half. That's a real division of labor — most engineers spend the bulk of their day on the writing half and gate the shipping half behind exactly the kind of review you just watched.
 
 ---
 
@@ -203,14 +211,14 @@ You ran 5 of them yourself; you watched your instructor demo the 6th.
 | `git pull` | You | Steps 3, 11 — synced from GitHub |
 | `git add` | You | Step 7 — staged your change |
 | `git commit -m` | You | Step 8 — snapshotted it |
-| `git push` | Instructor | Step 9 — sent your branch up |
+| `git push` | Instructor | Step 9 — sent their branch up |
 
 Plus the two "one step further" commands:
 
 | Command | Who ran it | When |
 |---|---|---|
 | `git switch -c` | You | Step 4 — made a branch |
-| `gh pr create` | Instructor | Step 9 — opened the PR |
+| `gh pr create` | Instructor | Step 10 — opened the PR |
 
 ---
 
