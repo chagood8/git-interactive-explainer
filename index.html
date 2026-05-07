@@ -11,19 +11,21 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f7f6f3;
-  --surface: #ffffff;
-  --border: #e8e6e0;
-  --text: #1a1917;
-  --muted: #999490;
-  --pink: #e05568;
-  --pink-light: #fce8eb;
-  --blue: #5b7fe0;
-  --blue-light: #eaeefc;
-  --gold: #c48a08;
-  --gold-light: #fdf4e0;
+  --bg: #120224;
+  --surface: #1d0f3d;
+  --border: #4d2f8f;
+  --text: #f8f1ff;
+  --muted: #cbb9f7;
+  --laser: #ff4fa3;
+  --laser-light: #43142d;
+  --electric: #34d6ff;
+  --electric-light: #103248;
+  --sun: #ffd84d;
+  --sun-light: #443608;
+  --slime: #7efc5b;
+  --slime-light: #17381c;
   --radius: 12px;
-  --shadow: 0 2px 16px rgba(0,0,0,0.06);
+  --shadow: 0 10px 30px rgba(4,0,16,0.45);
 }
 html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); }
 
@@ -43,8 +45,8 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
   font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
   background: var(--bg); color: var(--muted); transition: all 0.18s;
 }
-.mode-btn:hover { color: var(--text); border-color: #ccc; }
-.mode-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+.mode-btn:hover { color: var(--text); border-color: var(--electric); }
+.mode-btn.active { background: var(--laser); color: var(--bg); border-color: var(--laser); }
 
 /* BODY */
 .body { flex: 1; display: flex; overflow: hidden; }
@@ -71,14 +73,14 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 /* tooltip */
 .ztip {
   display: none; position: absolute; bottom: calc(100% + 10px); left: 50%;
-  transform: translateX(-50%); background: #1a1917; color: #fff;
+  transform: translateX(-50%); background: var(--surface); color: var(--text);
   font-size: 12px; line-height: 1.5; padding: 8px 12px; border-radius: 8px;
-  width: 190px; text-align: center; z-index: 100; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  width: 190px; text-align: center; z-index: 100; box-shadow: 0 8px 22px rgba(4,0,16,0.5); border: 1px solid var(--laser);
   pointer-events: none;
 }
 .ztip::after {
   content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-  border:5px solid transparent; border-top-color:#1a1917;
+  border:5px solid transparent; border-top-color:var(--surface);
 }
 .zone-cell:hover .ztip { display: block; }
 
@@ -95,7 +97,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
   border-right: 1px solid var(--border);
 }
 .legend-cell:last-child { border-right: none; }
-.legend-cell.remote { color: #b040a0; }
+.legend-cell.remote { color: var(--laser); }
 
 /* INTRO / CONCEPTS / BEST PRACTICES CARDS */
 .intro-card, .concepts-card, .bp-card {
@@ -113,8 +115,8 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 .intro-term {
   font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; margin-bottom: 6px;
 }
-.intro-term.git { color: var(--pink); }
-.intro-term.github { color: var(--blue); }
+.intro-term.git { color: var(--laser); }
+.intro-term.github { color: var(--electric); }
 .intro-desc { font-size: 13.5px; line-height: 1.65; color: var(--text); }
 .intro-foot {
   padding: 11px 22px; font-size: 12.5px; color: var(--muted);
@@ -127,10 +129,10 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 .concept-def { font-size: 12.5px; line-height: 1.55; color: var(--text); margin-bottom: 6px; }
 .concept-why { font-size: 11.5px; font-style: italic; color: var(--muted); line-height: 1.5; }
 .bp-card {
-  border-left: 4px solid var(--gold);
+  border-left: 4px solid var(--sun);
   display: flex; gap: 14px; padding: 16px 22px; align-items: flex-start;
 }
-.bp-mark { font-size: 22px; color: var(--gold); line-height: 1; flex-shrink: 0; margin-top: 1px; }
+.bp-mark { font-size: 22px; color: var(--sun); line-height: 1; flex-shrink: 0; margin-top: 1px; }
 .bp-body { flex: 1; }
 .bp-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
 .bp-text { font-size: 13px; line-height: 1.65; color: var(--text); }
@@ -161,33 +163,33 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
   font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
   padding: 4px 11px; border-radius: 6px; flex-shrink: 0;
 }
-.cmd-tag.pink { background: var(--pink-light); color: var(--pink); }
-.cmd-tag.blue { background: var(--blue-light); color: var(--blue); }
-.cmd-tag.gold { background: var(--gold-light); color: var(--gold); }
+.cmd-tag.laser { background: var(--laser-light); color: var(--laser); }
+.cmd-tag.electric { background: var(--electric-light); color: var(--electric); }
+.cmd-tag.sun { background: var(--sun-light); color: var(--sun); }
 
 .arrow-track {
   flex: 1; display: flex; align-items: center; gap: 0; position: relative;
   min-width: 0; overflow: hidden; height: 20px;
 }
 .track-line { flex:1; height: 2px; border-radius: 1px; opacity: 0.25; }
-.track-line.pink { background: var(--pink); }
-.track-line.blue { background: var(--blue); }
-.track-line.gold { background: var(--gold); }
+.track-line.laser { background: var(--laser); }
+.track-line.electric { background: var(--electric); }
+.track-line.sun { background: var(--sun); }
 .ah { width:0; height:0; flex-shrink:0; border-top:5px solid transparent; border-bottom:5px solid transparent; }
-.ah.r.pink { border-left:9px solid var(--pink); }
-.ah.r.blue { border-left:9px solid var(--blue); }
-.ah.r.gold { border-left:9px solid var(--gold); }
-.ah.l.pink { border-right:9px solid var(--pink); }
-.ah.l.blue { border-right:9px solid var(--blue); }
-.ah.l.gold { border-right:9px solid var(--gold); }
+.ah.r.laser { border-left:9px solid var(--laser); }
+.ah.r.electric { border-left:9px solid var(--electric); }
+.ah.r.sun { border-left:9px solid var(--sun); }
+.ah.l.laser { border-right:9px solid var(--laser); }
+.ah.l.electric { border-right:9px solid var(--electric); }
+.ah.l.sun { border-right:9px solid var(--sun); }
 
 .fdot {
   position:absolute; width:8px; height:8px; border-radius:50%;
   top:50%; margin-top:-4px; pointer-events:none;
 }
-.fdot.pink { background:var(--pink); }
-.fdot.blue { background:var(--blue); }
-.fdot.gold { background:var(--gold); }
+.fdot.laser { background:var(--laser); }
+.fdot.electric { background:var(--electric); }
+.fdot.sun { background:var(--sun); }
 .fdot.gr { animation: gr 0.65s ease forwards; }
 .fdot.gl { animation: gl 0.65s ease forwards; }
 @keyframes gr { from{left:0;opacity:1} to{left:100%;opacity:0} }
@@ -238,7 +240,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 .wt-track { flex:1; display:flex; gap:5px; }
 .wt-pip { height:5px; border-radius:3px; flex:1; background:var(--border); cursor:pointer; transition:background 0.2s; }
 .wt-pip.done { background:var(--text); }
-.wt-pip.curr { background:var(--blue); }
+.wt-pip.curr { background:var(--electric); }
 .wt-count { font-size:12px; color:var(--muted); white-space:nowrap; }
 .wt-btn {
   padding:7px 16px; border-radius:8px; border:1.5px solid var(--border);
@@ -246,8 +248,8 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
   background:var(--bg); transition:all 0.15s; color:var(--text);
 }
 .wt-btn:disabled { opacity:0.35; cursor:default; }
-.wt-btn:not(:disabled):hover { background:var(--text); color:#fff; border-color:var(--text); }
-.wt-btn.primary { background:var(--text); color:#fff; border-color:var(--text); }
+.wt-btn:not(:disabled):hover { background:var(--electric); color:var(--bg); border-color:var(--electric); }
+.wt-btn.primary { background:var(--laser); color:var(--bg); border-color:var(--laser); }
 .wt-btn.primary:not(:disabled):hover { opacity:0.8; }
 </style>
 </head>
@@ -257,42 +259,42 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 const { useState } = React;
 
 const ZONES = [
-  { id:'wd', label:'Working Directory', sub:'Your files on disk',      fill:'#fefae8', stroke:'#c9a830', tip:'Your normal folder — where you write and edit code. Nothing is saved to Git history yet.' },
-  { id:'sa', label:'Staging Area',      sub:'Ready to commit',         fill:'#e5f7fe', stroke:'#34a0c8', tip:'A holding zone. You decide exactly which changes to include before creating a save point.' },
-  { id:'lr', label:'Local Repo',        sub:'Your save history',       fill:'#e5feeb', stroke:'#34c857', tip:'Git\'s private history on your own computer — every commit you\'ve ever made lives here.' },
-  { id:'rr', label:'Remote Repo',       sub:'Shared online copy',      fill:'#fde5f8', stroke:'#c834a8', tip:'The project on GitHub/GitLab your whole team can access. Nothing goes here until you push.' },
+  { id:'wd', label:'Working Directory', sub:'Your files on disk',      fill:'var(--sun-light)', stroke:'var(--sun)', tip:'Your normal folder — where you write and edit code. Nothing is saved to Git history yet.' },
+  { id:'sa', label:'Staging Area',      sub:'Ready to commit',         fill:'var(--electric-light)', stroke:'var(--electric)', tip:'A holding zone. You decide exactly which changes to include before creating a save point.' },
+  { id:'lr', label:'Local Repo',        sub:'Your save history',       fill:'var(--slime-light)', stroke:'var(--slime)', tip:'Git\'s private history on your own computer — every commit you\'ve ever made lives here.' },
+  { id:'rr', label:'Remote Repo',       sub:'Shared online copy',      fill:'var(--laser-light)', stroke:'var(--laser)', tip:'The project on GitHub/GitLab your whole team can access. Nothing goes here until you push.' },
 ];
 
 const CMDS = [
-  { id:'add',      label:'git add',      color:'pink', dir:'r', from:'wd', to:'sa',
+  { id:'add',      label:'git add',      color:'laser', dir:'r', from:'wd', to:'sa',
     short:'Stage your changes',
     eli5:'Imagine packing a box before shipping. git add lets you pick which files go in the box. You\'re not sending it yet — just deciding what\'s included.',
     eg:'git add index.html\ngit add .         (adds everything)' },
-  { id:'commit',   label:'git commit',   color:'pink', dir:'r', from:'sa', to:'lr',
+  { id:'commit',   label:'git commit',   color:'laser', dir:'r', from:'sa', to:'lr',
     short:'Create a save point',
     eli5:'You seal the box and write a label on it. git commit takes everything you staged and creates a permanent, named snapshot in your project\'s history.',
     eg:'git commit -m "Add homepage layout"' },
-  { id:'push',     label:'git push',     color:'pink', dir:'r', from:'lr', to:'rr',
+  { id:'push',     label:'git push',     color:'laser', dir:'r', from:'lr', to:'rr',
     short:'Upload to the cloud',
     eli5:'You send your sealed, labeled boxes to a shared warehouse (GitHub). Your team can now see your work online. Nothing leaves your machine until you do this.',
     eg:'git push origin main' },
-  { id:'fetch',    label:'git fetch',    color:'blue', dir:'l', from:'rr', to:'lr',
+  { id:'fetch',    label:'git fetch',    color:'electric', dir:'l', from:'rr', to:'lr',
     short:'Download without applying',
     eli5:'You peek inside the warehouse and bring a copy of new boxes to your local storage — but you don\'t unpack them yet. Just safely downloading to check what\'s new.',
     eg:'git fetch origin' },
-  { id:'merge',    label:'git merge',    color:'blue', dir:'l', from:'lr', to:'wd',
+  { id:'merge',    label:'git merge',    color:'electric', dir:'l', from:'lr', to:'wd',
     short:'Combine histories',
     eli5:'Now you unpack the boxes and mix your teammate\'s changes into your own files. Git is smart and combines edits from different people automatically.',
     eg:'git merge origin/main' },
-  { id:'pull',     label:'git pull',     color:'blue', dir:'l', from:'rr', to:'wd',
+  { id:'pull',     label:'git pull',     color:'electric', dir:'l', from:'rr', to:'wd',
     short:'Fetch + Merge in one step',
     eli5:'A shortcut: grab the latest from the cloud AND put it straight in my files. It runs git fetch and git merge back-to-back so you don\'t have to.',
     eg:'git pull origin main' },
-  { id:'clone',    label:'git clone',    color:'gold', dir:'l', from:'rr', to:'lr',
+  { id:'clone',    label:'git clone',    color:'sun', dir:'l', from:'rr', to:'lr',
     short:'Copy a project to your machine',
     eli5:'You\'re brand new to a project. git clone downloads everything — all files and all history — from the shared warehouse onto your computer. You only do this once.',
     eg:'git clone https://github.com/user/repo.git' },
-  { id:'checkout', label:'git checkout', color:'gold', dir:'l', from:'lr', to:'wd',
+  { id:'checkout', label:'git checkout', color:'sun', dir:'l', from:'lr', to:'wd',
     short:'Switch branches or restore files',
     eli5:'Your project has parallel timelines called branches. git checkout lets you jump between them, or bring a specific old file back from a past save point.',
     eg:'git checkout main\ngit checkout -b new-feature' },
