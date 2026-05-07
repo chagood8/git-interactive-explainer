@@ -1,5 +1,7 @@
 # Group Lesson: Everyone in the Same Repo
 
+> **Status: deferred.** Run the [solo lesson](./LESSON-solo.md) first and let the class get comfortable with the loop before introducing this one. This lesson assumes every student is added as a collaborator on the repo so they can push directly — which adds real overhead and real conflicts. Per the May 7 prep call, we're holding it back until the solo flow is fluent: *"In the group, you're probably gonna hit conflicts… it's going to be noise and people are going to get derailed."* The content below is kept up to date with the solo lesson so it's ready when you are.
+
 This is the same loop as the [solo lesson](./LESSON-solo.md), but with a twist: **everyone in the room is working on the same repo at the same time.** That's where `git pull` finally earns its keep — by the time your instructor merges the class's PRs at the end of the session, ten different changes will land on `main` at once and you'll pull them all down.
 
 **Time:** ~25 minutes including review.
@@ -18,8 +20,11 @@ These are not arbitrary rules. They mirror how every real engineering team opera
 
 ## Before you start
 
-- [ ] You've been added as a **collaborator** on `chagood8/git-interactive-explainer` (your instructor handled this; check your email or GitHub notifications)
-- [ ] `gh auth status` shows you're logged in
+Get all of this done **before** the session — installing extensions live burns ~15 minutes you don't have.
+
+- [ ] You've been added as a **collaborator** on `chagood8/git-interactive-explainer` (your instructor handled this; check your email or GitHub notifications and accept the invite)
+- [ ] `git --version` returns 2.40+ and `gh auth status` shows you're logged in
+- [ ] VS Code installed, with your **coding agent extension** (Codex, Claude Code, or Cursor) installed and signed in. For Codex specifically: Extensions panel → search "Codex" → first result with the blue check from OpenAI → sign in with your SSA email.
 - [ ] **You've claimed a CSS variable from the table below.** Each person picks a different one so we don't all fight over the same line. Post your claim in the class chat.
 
 ### Variable claim board
@@ -43,11 +48,13 @@ If we have more than 10 people, pair up — pairs will share a branch and that's
 
 ## Step 1 — Clone
 
+In any terminal, run:
+
 ```bash
 git clone https://github.com/chagood8/git-interactive-explainer.git
-cd git-interactive-explainer
-code .
 ```
+
+Then open VS Code → **File → Open Folder…** → pick the `git-interactive-explainer` folder you just cloned. In the file explorer on the left, **right-click the folder → Open in Integrated Terminal**. That terminal is already pointed at the project, so you don't have to `cd`. Use it for the rest of the lesson.
 
 ---
 
@@ -86,11 +93,13 @@ You should see `On branch XX-VARIABLE`. **If it still says `main`, stop and re-r
 
 ## Step 4 — Have your coding agent make your change
 
-Open your coding agent in VS Code. Customize this prompt with **your variable** and **a new color of your choice** (any valid CSS color or hex):
+Open your coding agent in VS Code. Pick a new color in plain English — "warm orange," "deep navy," "forest green," "neon magenta," anything — and paste this prompt with **your claimed variable** filled in:
 
-> In `index.html`, change the `--YOUR_VARIABLE` CSS variable to `#YOUR_NEW_COLOR`. Update only that one variable definition in the `:root` block. Show the diff before applying.
+> In `index.html`, change the value of the `--YOUR_VARIABLE` CSS variable to **[your color in plain words]**. Update only that one line in the `:root` block — leave the other variables alone. Show me the diff first, then apply it.
 
-Accept the diff. Open `index.html` in your browser to confirm the visual change.
+No hex codes needed. Let the agent figure out the right color value. The "show me the diff first, then apply it" wording does both in one shot — you see what's about to change, then it actually changes. If the agent stops after the diff and waits, just tell it "yes, apply it."
+
+Then **open `index.html` in your browser** (double-click it, or right-click → Open With → your browser) to confirm your variable's element actually changed. If it looks unchanged, hard refresh (Ctrl+Shift+R / Cmd+Shift+R).
 
 ---
 

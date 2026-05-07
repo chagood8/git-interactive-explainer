@@ -1,34 +1,36 @@
 # Solo Lesson: Your First Real Git Loop
 
-You're going to clone a real repo, make a real change with the help of a coding agent, and propose it back to GitHub through a pull request. Every command below is copy-paste ready — paste it into your terminal exactly as written.
+You're going to clone a real repo, make a real change with the help of a coding agent, and hand it off so your instructor can push it and open the pull request live in front of the class. Every command below is copy-paste ready.
 
 **Time:** ~15 minutes.
-**You'll use all 6 slide commands** (`clone`, `status`, `add`, `commit`, `push`, `pull`) plus two new ones: `git switch` to branch, and `gh pr create` to open the pull request.
+**You'll use 5 of the 6 slide commands** (`clone`, `status`, `add`, `commit`, `pull`) plus `git switch -c` to create a branch. You'll watch your instructor run the 6th — `git push` — and `gh pr create` on screen.
 
 ---
 
 ## Two rules — read these first
 
-These apply to **every** lesson in this repo, both solo and group:
+1. **You don't push in this lesson.** Cloning, branching, editing, and committing all stay on your machine. When you finish, you hand the branch name to your instructor and they push it on screen so the whole class sees the same PR queue.
+2. **You don't merge your own PR.** Once your instructor pushes your branch and opens the pull request, they review and merge from the GitHub UI in front of the class — that's the teaching moment.
 
-1. **Never push directly to `main`.** All your work happens on a branch you create.
-2. **Never merge your own PR.** You open it. Your instructor reviews and merges from the GitHub UI in front of the class — that's the teaching moment.
-
-You'll see why this matters in the real world: in any team worth working on, the person who writes the change is not the person who merges it. Building that habit now costs you nothing.
+You'll see why this matters in the real world: in any team worth working on, the person who writes the change is not the person who merges it. We're building that habit on a tiny color change so you've already done it once before it matters.
 
 ---
 
 ## What you need before you start
 
-- [ ] Terminal open (Windows Terminal, macOS Terminal, or VS Code's built-in terminal — all fine)
+Get all of this done **before** the session — installing extensions live burns ~15 minutes you don't have.
+
+- [ ] Terminal works (Windows Terminal, macOS Terminal, or VS Code's built-in terminal — all fine)
 - [ ] `git --version` returns 2.40+
-- [ ] `gh --version` works, and `gh auth status` says you're logged in
-- [ ] VS Code installed, with your **coding agent** (Claude Code, Codex, Cursor, etc.) signed in
-- [ ] You've picked a folder to clone into. Suggestion: `cd ~` or `cd Documents`
+- [ ] VS Code installed
+- [ ] **Codex extension installed** in VS Code (Extensions panel → search "Codex" → first result with the blue check from OpenAI), and you're signed in with your SSA email so the chat panel is ready to go. If your team uses a different agent (Claude Code, Cursor), the same rule applies: installed, signed in, ready before the session starts.
+- [ ] You've picked a folder to clone into (your Desktop is fine)
 
 ---
 
 ## Step 1 — Clone the repo
+
+In any terminal — VS Code's, Windows Terminal, macOS Terminal, doesn't matter — run:
 
 ```bash
 git clone https://github.com/chagood8/git-interactive-explainer.git
@@ -36,12 +38,11 @@ git clone https://github.com/chagood8/git-interactive-explainer.git
 
 **Why:** `git clone` copies the entire repo (files + every commit ever made) onto your machine and points it at GitHub as the "remote." This is how 99% of projects start on your laptop.
 
-```bash
-cd git-interactive-explainer
-code .
-```
+Now open VS Code, go to **File → Open Folder…**, and pick the `git-interactive-explainer` folder you just cloned. Then in the file explorer on the left, **right-click the folder → Open in Integrated Terminal**.
 
-VS Code opens with the project. The file you'll edit today is `index.html`.
+That gives you a terminal that's already pointed at the project — no `cd` to type, no risk of running git commands in the wrong directory. Use this terminal for the rest of the lesson.
+
+The file you'll edit today is `index.html`.
 
 ---
 
@@ -75,10 +76,10 @@ If you just cloned, you'll see `Already up to date.` That's fine. If other stude
 ## Step 4 — Create your own branch (do not skip this)
 
 ```bash
-git switch -c color-change-XX
+git switch -c theme-XX
 ```
 
-Replace `XX` with your initials (e.g. `color-change-cmh`).
+Replace `XX` with your initials (e.g. `theme-cmh`).
 
 **Why:** A branch is a parallel timeline. You make changes here without touching `main`. The `-c` means "create it." (You may also see this written as `git checkout -b` — same thing, older syntax.)
 
@@ -86,19 +87,29 @@ Confirm:
 ```bash
 git status
 ```
-You should now see `On branch color-change-XX`. **If it still says `On branch main`, stop and re-run the `git switch -c` command.** Never edit files while `git status` says you're on `main`.
+You should now see `On branch theme-XX`. **If it still says `On branch main`, stop and re-run the `git switch -c` command.** Never edit files while `git status` says you're on `main`.
 
 ---
 
 ## Step 5 — Let your coding agent make the change
 
-Open your coding agent's chat panel in VS Code. Paste this prompt:
+Open your coding agent's chat panel in VS Code. Pick **one** of these themes:
 
-> In `index.html`, change the `--pink` CSS variable (currently `#e05568`) to teal (`#0d9488`). Update only the `--pink` definition in the `:root` block — leave `--pink-light` alone. Show me the diff before applying.
+- **Ocean** — blues and teals
+- **Forest** — greens and earth tones
+- **Sunset** — warm oranges and pinks
+- **Monochrome** — grayscale
+- **Retro** — 80s neon
 
-Accept the change. Then **open `index.html` in your browser** (double-click it, or right-click → Open With → your browser) and confirm the pink accents are now teal.
+Then paste this prompt, swapping in the theme you picked:
 
-**Why:** This is the core loop you'll use every day from Phase 1 onward — describe what you want, the agent edits the code, you verify visually.
+> In `index.html`, change the page's color theme to **[your theme]**. Show me the diff first, then apply it.
+
+That's the whole prompt. No hex codes, no variable names — let the agent figure out which CSS variables to touch. The "show me the diff first, then apply it" wording does two things in one shot: you see what's about to change, then it actually changes. If the agent stops after the diff and waits, just tell it "yes, apply it."
+
+Once it applies, **open `index.html` in your browser** (double-click it, or right-click → Open With → your browser) and confirm the page actually looks like the theme you picked. If it doesn't, hard refresh (Ctrl+Shift+R / Cmd+Shift+R) — the browser may be caching the old version.
+
+**Why:** This is the core loop you'll use every day from Phase 1 onward — describe what you want in plain English, the agent edits the code, you verify visually. The reason we ask for the diff first is the safety habit: agents are fast and confident, and you want one beat to glance at what's about to land before it does.
 
 ---
 
@@ -134,44 +145,40 @@ git add index.html
 ## Step 8 — Commit
 
 ```bash
-git commit -m "Change accent color to teal"
+git commit -m "Apply [theme] color theme"
 ```
 
-**Why:** A commit is a permanent snapshot. The `-m` flag attaches a message so future-you (or your teammates) know why this change exists. **Write commit messages in the imperative**: "Change X," not "Changed X."
+Swap `[theme]` for whichever theme you picked, e.g. `Apply ocean color theme`.
+
+**Why:** A commit is a permanent snapshot. The `-m` flag attaches a message so future-you (or your teammates) know why this change exists. **Write commit messages in the imperative**: "Apply X," not "Applied X."
 
 ---
 
-## Step 9 — Push your branch to GitHub
+## Step 9 — Hand off to your instructor
 
-```bash
-git push -u origin color-change-XX
-```
+You're done with the typing part. Tell your instructor (in chat or out loud):
 
-**Why:** `git push` sends your commits up to GitHub. The `-u origin <branch>` part links your local branch to a new remote branch with the same name. You only need `-u` the first time you push a new branch — after that, plain `git push` works.
+> My branch is **`theme-XX`** and it's committed locally.
 
-> If you ever see an error like `! [remote rejected] main -> main (protected branch)`, that's the safety net working — you tried to push to `main` instead of your branch. Re-run `git status`, confirm you're on your branch, push again.
+Your instructor will then push your branch to GitHub and open a pull request **on screen, in front of the class** — so you see `git push` and `gh pr create` in action without having to run them yourself this round.
 
----
-
-## Step 10 — Open a pull request, then **stop**
-
-```bash
-gh pr create --fill --web
-```
-
-**Why:** A pull request is a formal proposal: "I'd like to merge my branch into main." `--fill` auto-uses your commit message as the PR title/body. `--web` opens your browser so you can hit the green button to file it.
-
-(If `gh` isn't working, GitHub also shows a yellow "Compare & pull request" banner the first time you visit the repo after pushing — that works too.)
-
-In the browser, click **Create pull request**. **Do not click Merge.** Your PR is now sitting in the queue at https://github.com/chagood8/git-interactive-explainer/pulls alongside everyone else's.
+You're not a collaborator on this repo, which is why you can't push directly. That's also true on every real engineering team you'll join: push permissions are scoped tightly, and the people who can push aren't always the people writing the change. Watching it happen is the point.
 
 You're done with the active part of the lesson. ✅
 
 ---
 
-## Step 11 — (Later) After your instructor merges PRs, sync `main`
+## Step 10 — Watch the merge
 
-Your instructor will walk through the open PRs in class, review them on screen, and merge them through the GitHub UI. Once they've merged your PR (and your classmates'), come back to your terminal and run:
+Once your instructor pushes a batch of branches and opens the PRs, https://github.com/chagood8/git-interactive-explainer/pulls fills up with everyone's work. Your instructor will walk through them one at a time — diff, comments, **Merge pull request**, **Confirm merge** — so the whole class sees the queue and the merge flow together.
+
+This is the moment to ask questions: What's "Squash and merge" vs. "Merge commit"? When would you delete a branch after merging? What if two PRs touch the same line? Phase 1 leans on this every day; better to ask now than the first time it's load-bearing.
+
+---
+
+## Step 11 — Sync `main` and see your work land
+
+Once your instructor has merged the batch, come back to your terminal and run:
 
 ```bash
 git switch main
@@ -181,40 +188,40 @@ git log --oneline -10
 
 **This is where `git pull` finally does real work.** Your local `main` was behind GitHub's `main` because the merges happened on GitHub, not on your laptop. The pull brings everything down at once. You'll see your commit alongside your classmates' commits in the log — a real shared history.
 
-You ran the entire professional git loop: branch → change → commit → push → PR → (someone else reviews and merges) → pull. That's the workflow real teams use, every day.
+You ran the meaningful part of the professional git loop: clone → branch → change → commit → (instructor pushes, opens PR, merges) → pull. The two pieces you didn't run yourself are the two pieces a typical engineer also doesn't always run, since most teams gate them behind exactly the kind of review you just watched.
 
 ---
 
 ## Recap — the 6 slide commands in context
 
-| Command | When you used it |
-|---|---|
-| `git clone` | Step 1 — got the project |
-| `git status` | Steps 2, 4, 6 — checked state |
-| `git pull` | Steps 3, 11 — synced from GitHub |
-| `git add` | Step 7 — staged your change |
-| `git commit -m` | Step 8 — snapshotted it |
-| `git push` | Step 9 — sent it up |
+You ran 5 of them yourself; you watched your instructor demo the 6th.
+
+| Command | Who ran it | When |
+|---|---|---|
+| `git clone` | You | Step 1 — got the project |
+| `git status` | You | Steps 2, 4, 6 — checked state |
+| `git pull` | You | Steps 3, 11 — synced from GitHub |
+| `git add` | You | Step 7 — staged your change |
+| `git commit -m` | You | Step 8 — snapshotted it |
+| `git push` | Instructor | Step 9 — sent your branch up |
 
 Plus the two "one step further" commands:
 
-| Command | When you used it |
-|---|---|
-| `git switch -c` | Step 4 — made a branch |
-| `gh pr create` | Step 10 — opened the PR |
+| Command | Who ran it | When |
+|---|---|---|
+| `git switch -c` | You | Step 4 — made a branch |
+| `gh pr create` | Instructor | Step 9 — opened the PR |
 
 ---
 
 ## Common stumbles
 
-**`git push` says "src refspec main does not match any"** — you're not on a branch with commits. Run `git status` to check.
+**`fatal: not a git repository`** — your terminal isn't pointed at the cloned folder. In VS Code's file explorer, right-click the `git-interactive-explainer` folder → **Open in Integrated Terminal**, and run the command in that terminal.
 
-**`! [remote rejected] main -> main (protected branch)`** — you tried to push to `main`. Get on your branch (`git switch color-change-XX`) and try again.
+**The agent showed the diff and just sits there** — the prompt asks it to apply after showing. If it's still waiting, type "yes, apply it" or click the **Apply** / **Accept** button in the agent panel.
 
-**`gh: command not found`** — install with `brew install gh` (Mac) or `winget install GitHub.cli` (Windows), then `gh auth login`.
+**Browser still shows the old colors after the agent edit** — hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac).
 
-**Your coding agent edited the wrong color variable** — undo with `git restore index.html` and try a more specific prompt.
+**The agent only changed half the colors, or picked something off-theme** — undo with `git restore index.html`, then re-prompt with a clearer theme name (or pick a different theme).
 
-**Browser still shows the old color after the agent edit** — hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac).
-
-**You accidentally clicked Merge on your own PR** — tell your instructor. Not the end of the world; just breaks the teaching demo for one PR.
+**`git status` says `On branch main`** — you skipped Step 4 or the `git switch -c` failed. Run `git switch theme-XX` (your initials) to get back on your branch before you commit anything.
