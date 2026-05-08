@@ -11,28 +11,35 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f7f6f3;
+  --bg: #f5f7fb;
   --surface: #ffffff;
-  --border: #e8e6e0;
-  --text: #1a1917;
-  --muted: #999490;
-  --pink: #e05568;
-  --pink-light: #fce8eb;
-  --blue: #5b7fe0;
-  --blue-light: #eaeefc;
-  --gold: #c48a08;
-  --gold-light: #fdf4e0;
+  --border: #d8deea;
+  --text: #14213d;
+  --muted: #667085;
+  --pink: #b31942;
+  --pink-light: #fde8ee;
+  --blue: #0a3161;
+  --blue-light: #e6eef8;
+  --gold: #f2b705;
+  --gold-light: #fff7d6;
   --radius: 12px;
-  --shadow: 0 2px 16px rgba(0,0,0,0.06);
+  --shadow: 0 2px 18px rgba(10,49,97,0.08);
 }
 html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); }
 
-.app { display: flex; flex-direction: column; min-height: 100vh; }
+.app {
+  display: flex; flex-direction: column; min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(179,25,66,0.06) 0 18%, transparent 18% 100%),
+    repeating-linear-gradient(180deg, rgba(179,25,66,0.045) 0 12px, rgba(255,255,255,0) 12px 28px),
+    var(--bg);
+}
 
 /* HEADER */
 .header {
   padding: 24px 36px 20px; border-bottom: 1px solid var(--border);
-  background: var(--surface); display: flex; align-items: center;
+  background: linear-gradient(90deg, #ffffff 0%, #f9fbff 58%, #eaf1fb 100%);
+  display: flex; align-items: center;
   justify-content: space-between; gap: 16px;
 }
 .header-left h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.4px; }
@@ -43,8 +50,8 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
   font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
   background: var(--bg); color: var(--muted); transition: all 0.18s;
 }
-.mode-btn:hover { color: var(--text); border-color: #ccc; }
-.mode-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+.mode-btn:hover { color: var(--text); border-color: #9aa8bd; }
+.mode-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 
 /* BODY */
 .body { flex: 1; display: flex; overflow: hidden; }
@@ -71,14 +78,14 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 /* tooltip */
 .ztip {
   display: none; position: absolute; bottom: calc(100% + 10px); left: 50%;
-  transform: translateX(-50%); background: #1a1917; color: #fff;
+  transform: translateX(-50%); background: #0a3161; color: #fff;
   font-size: 12px; line-height: 1.5; padding: 8px 12px; border-radius: 8px;
   width: 190px; text-align: center; z-index: 100; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
   pointer-events: none;
 }
 .ztip::after {
   content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-  border:5px solid transparent; border-top-color:#1a1917;
+  border:5px solid transparent; border-top-color:#0a3161;
 }
 .zone-cell:hover .ztip { display: block; }
 
@@ -95,7 +102,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
   border-right: 1px solid var(--border);
 }
 .legend-cell:last-child { border-right: none; }
-.legend-cell.remote { color: #b040a0; }
+.legend-cell.remote { color: var(--pink); }
 
 /* INTRO / CONCEPTS / BEST PRACTICES CARDS */
 .intro-card, .concepts-card, .bp-card {
@@ -237,7 +244,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 .wt-title { font-size:13px; font-weight:600; white-space:nowrap; }
 .wt-track { flex:1; display:flex; gap:5px; }
 .wt-pip { height:5px; border-radius:3px; flex:1; background:var(--border); cursor:pointer; transition:background 0.2s; }
-.wt-pip.done { background:var(--text); }
+.wt-pip.done { background:var(--pink); }
 .wt-pip.curr { background:var(--blue); }
 .wt-count { font-size:12px; color:var(--muted); white-space:nowrap; }
 .wt-btn {
@@ -246,8 +253,8 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
   background:var(--bg); transition:all 0.15s; color:var(--text);
 }
 .wt-btn:disabled { opacity:0.35; cursor:default; }
-.wt-btn:not(:disabled):hover { background:var(--text); color:#fff; border-color:var(--text); }
-.wt-btn.primary { background:var(--text); color:#fff; border-color:var(--text); }
+.wt-btn:not(:disabled):hover { background:var(--blue); color:#fff; border-color:var(--blue); }
+.wt-btn.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
 .wt-btn.primary:not(:disabled):hover { opacity:0.8; }
 </style>
 </head>
@@ -257,10 +264,10 @@ html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-s
 const { useState } = React;
 
 const ZONES = [
-  { id:'wd', label:'Working Directory', sub:'Your files on disk',      fill:'#fefae8', stroke:'#c9a830', tip:'Your normal folder — where you write and edit code. Nothing is saved to Git history yet.' },
-  { id:'sa', label:'Staging Area',      sub:'Ready to commit',         fill:'#e5f7fe', stroke:'#34a0c8', tip:'A holding zone. You decide exactly which changes to include before creating a save point.' },
-  { id:'lr', label:'Local Repo',        sub:'Your save history',       fill:'#e5feeb', stroke:'#34c857', tip:'Git\'s private history on your own computer — every commit you\'ve ever made lives here.' },
-  { id:'rr', label:'Remote Repo',       sub:'Shared online copy',      fill:'#fde5f8', stroke:'#c834a8', tip:'The project on GitHub/GitLab your whole team can access. Nothing goes here until you push.' },
+  { id:'wd', label:'Working Directory', sub:'Your files on disk',      fill:'#fff7d6', stroke:'#f2b705', tip:'Your normal folder — where you write and edit code. Nothing is saved to Git history yet.' },
+  { id:'sa', label:'Staging Area',      sub:'Ready to commit',         fill:'#fde8ee', stroke:'#b31942', tip:'A holding zone. You decide exactly which changes to include before creating a save point.' },
+  { id:'lr', label:'Local Repo',        sub:'Your save history',       fill:'#e6eef8', stroke:'#0a3161', tip:'Git\'s private history on your own computer — every commit you\'ve ever made lives here.' },
+  { id:'rr', label:'Remote Repo',       sub:'Shared online copy',      fill:'#ffffff', stroke:'#b31942', tip:'The project on GitHub/GitLab your whole team can access. Nothing goes here until you push.' },
 ];
 
 const CMDS = [
