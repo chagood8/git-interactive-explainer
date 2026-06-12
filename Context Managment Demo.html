@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Context Management — The Desk</title>
+<style>
+  :root{
+    --ssa-blue:#003399;
+    --blumine:#336179;
+    --body:#111827;
+    --nepal:#8CA3B2;
+    --persimmon:#DE4702;
+    --green-line:#1f9d6b;
+    --yellow-line:#b78103;
+    --red-line:#c2392b;
+    --line:#E5EBF0;
+    --paper-files:#5B8DB8;
+    --paper-tools:#8CA3B2;
+    --paper-chat:#B9C9D6;
+    --paper-skill:#5FA98C;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:'Avenir Next LT Pro','Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    color:var(--body);background:#fff;
+    display:flex;justify-content:center;
+    padding:32px 28px 40px;
+  }
+  .wrap{width:100%;max-width:1180px}
+
+  .eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ssa-blue);font-weight:600;margin:0 0 6px}
+  h1{font-size:40px;line-height:1.05;margin:0 0 6px;color:var(--ssa-blue);font-weight:700;letter-spacing:-.01em}
+  .sub{font-size:18px;color:var(--blumine);margin:0 0 24px;font-weight:500}
+
+  /* ---- The desk ---- */
+  .desk-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+  .desk-label{font-size:15px;font-weight:600;color:var(--body)}
+  .desk-label span{color:var(--nepal);font-weight:500}
+  .pct{font-size:30px;font-weight:700;color:var(--ssa-blue);font-variant-numeric:tabular-nums}
+
+  .bar-shell{position:relative}
+  .bar{
+    position:relative;height:96px;border:1px solid var(--ssa-blue);border-radius:6px;
+    background:#F7F9FB;overflow:hidden;display:flex;
+  }
+  .seg{height:100%;transition:width .55s cubic-bezier(.3,.7,.3,1);position:relative;cursor:help}
+  .seg:hover{filter:brightness(1.08)}
+  /* 60% smart/dumb boundary */
+  .boundary{position:absolute;top:-10px;bottom:-10px;left:60%;width:2px;background:var(--red-line);z-index:5;pointer-events:none}
+  .boundary::after{content:"60%";position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+    font-size:11px;font-weight:700;color:var(--red-line);white-space:nowrap}
+  .zones{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .zone-smart{color:var(--green-line)}
+  .zone-dumb{color:var(--red-line)}
+  .hint{font-size:12.5px;color:var(--nepal);margin-top:4px;font-style:italic}
+
+  /* ---- Tooltip ---- */
+  #tip{
+    position:fixed;z-index:50;pointer-events:none;opacity:0;transition:opacity .12s ease;
+    background:var(--ssa-blue);color:#fff;font-size:13px;font-weight:600;
+    padding:6px 10px;border-radius:4px;white-space:nowrap;transform:translate(-50%,-120%);
+    box-shadow:0 4px 14px rgba(0,0,0,.22);
+  }
+  #tip::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:var(--ssa-blue)}
+  #tip .tp{color:#cdd9f2;font-weight:500}
+
+  /* ---- Status row ---- */
+  .status{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0 18px}
+  .card{border:1px solid var(--line);border-radius:6px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.05)}
+  .card .k{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--nepal);font-weight:600;margin-bottom:6px}
+  .card .v{font-size:21px;font-weight:700;display:flex;align-items:center;gap:9px;line-height:1.15}
+  .dot{width:13px;height:13px;border-radius:50%;flex:none}
+  .card .note{font-size:13px;color:var(--blumine);margin-top:4px}
+
+  /* ---- Narration ---- */
+  .narrate{border-left:4px solid var(--ssa-blue);background:#F7F9FB;padding:12px 16px;border-radius:0 4px 4px 0;
+    font-size:16px;min-height:24px;margin-bottom:22px}
+  .narrate b{color:var(--ssa-blue)}
+
+  /* ---- Controls ---- */
+  .controls{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+  .group{display:flex;flex-direction:column;gap:8px}
+  .group .gl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--nepal);font-weight:600}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  button{
+    font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;
+    border-radius:4px;padding:11px 16px;border:1px solid var(--ssa-blue);
+    background:var(--ssa-blue);color:#fff;transition:transform .12s ease,background .15s ease,box-shadow .15s ease;
+  }
+  button:hover{background:#002a7d;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,51,153,.22)}
+  button:active{transform:translateY(0)}
+  button:focus-visible{outline:2px solid var(--ssa-blue);outline-offset:2px}
+  button.ghost{background:#fff;color:var(--ssa-blue)}
+  button.ghost:hover{background:#EEF3FA}
+  button.fix{background:#fff;color:var(--ssa-blue);border-color:var(--ssa-blue)}
+  button.fix:hover{background:#EEF3FA}
+  button.fix .cmd{color:var(--nepal);font-weight:500;font-size:13px}
+  button.on{background:var(--blumine);color:#fff;border-color:var(--blumine)}
+  .divider{width:1px;align-self:stretch;background:var(--line)}
+
+  /* ---- Subagent desk ---- */
+  .sub-wrap{margin-top:18px;border:1px dashed var(--nepal);border-radius:6px;padding:14px 16px;display:none}
+  .sub-wrap.show{display:block}
+  .sub-wrap .sl{font-size:13px;font-weight:600;color:var(--blumine);margin-bottom:8px}
+  .sub-bar{height:26px;border:1px solid var(--nepal);border-radius:4px;background:#F7F9FB;overflow:hidden}
+  .sub-bar .f{height:100%;width:0;background:var(--paper-skill);transition:width 1.1s ease}
+
+  /* ---- Legend / analogy key ---- */
+  .legend{margin-top:24px;border-top:1px solid var(--line);padding-top:14px;
+    display:flex;flex-wrap:wrap;gap:14px 22px;font-size:13px;color:var(--body)}
+  .legend .li{display:flex;align-items:center;gap:7px}
+  .legend .sw{width:14px;height:14px;border-radius:3px;flex:none}
+  .key{margin-top:16px;font-size:13.5px;color:var(--blumine);line-height:1.6}
+  .key b{color:var(--ssa-blue)}
+  .footer{margin-top:26px;font-size:11px;color:var(--nepal);display:flex;justify-content:space-between}
+
+  @media (max-width:720px){
+    .status{grid-template-columns:1fr}
+    h1{font-size:30px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Context Management · Lesson 2.5</p>
+  <h1>Your context window is a desk</h1>
+  <p class="sub">Everything the model is working with sits on one desk. The more you pile on, the slower and sloppier it gets at finding any one thing.</p>
+
+  <div class="bar-shell">
+    <div class="desk-head">
+      <div class="desk-label">The desk <span>— your context window (≈200K tokens) · hover any block to label it</span></div>
+      <div class="pct"><span id="pctNum">13</span>% full</div>
+    </div>
+    <div class="bar" id="bar" aria-label="context fill">
+      <div class="boundary"></div>
+    </div>
+    <div class="zones">
+      <div class="zone-smart">◀ Smart zone — sharp, cheap</div>
+      <div class="zone-dumb">Dumb zone — forgetful, pricey ▶</div>
+    </div>
+    <div class="hint">Tidying makes a session smaller — but each summary sheet stays on the desk, so a long session still creeps up over time.</div>
+  </div>
+
+  <div class="status">
+    <div class="card">
+      <div class="k">Find one specific fact</div>
+      <div class="v"><span class="dot" id="accDot"></span><span id="accText">Fast and accurate</span></div>
+      <div class="note" id="accNote">Plenty of room. It finds what you ask for.</div>
+    </div>
+    <div class="card">
+      <div class="k">Tokens in play</div>
+      <div class="v" id="tokText">≈ 26,000</div>
+      <div class="note">Every reply re-reads the whole desk.</div>
+    </div>
+    <div class="card">
+      <div class="k">What it costs you</div>
+      <div class="v" id="costText">Cheap, fast</div>
+      <div class="note">Bigger desk = more tokens = usage burns faster.</div>
+    </div>
+  </div>
+
+  <div class="narrate" id="narrate">Press <b>Keep working</b> to watch the desk fill up — files, tool output, and back-and-forth chat stack up fast.</div>
+
+  <div class="controls">
+    <div class="group">
+      <div class="gl">Run a session</div>
+      <div class="row">
+        <button id="work">Keep working ▶</button>
+        <button class="ghost" id="reset">Reset</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="group">
+      <div class="gl">When it gets full, do one of these</div>
+      <div class="row">
+        <button class="fix" id="compact">Tidy the desk<br><span class="cmd">/compact</span></button>
+        <button class="fix" id="clear">Clear the desk<br><span class="cmd">/clear · new chat</span></button>
+        <button class="fix" id="handoff">Sticky note<br><span class="cmd">/handoff</span></button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="group">
+      <div class="gl">Advanced: what you add to the desk</div>
+      <div class="row">
+        <button class="ghost" id="mcp">+ Plug in an MCP</button>
+        <button class="ghost" id="skill">+ Add a Skill</button>
+        <button class="ghost" id="subagent">Send to a subagent</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-wrap" id="subWrap">
+    <div class="sl">A second desk (the subagent) does the heavy reading on its own…</div>
+    <div class="sub-bar"><div class="f" id="subFill"></div></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="key">
+    <b>Tidy the desk (/compact):</b> same project — squash the pile into a summary sheet. The sheet stays, so the desk still grows. &nbsp;·&nbsp;
+    <b>Clear the desk (/clear):</b> new task — wipe everything so the last job isn't in the way. &nbsp;·&nbsp;
+    <b>Sticky note (/handoff):</b> write a short prompt for a fresh session so the next desk starts where you left off.
+  </div>
+
+  <div class="footer">
+    <span>SSA &amp; Co. — Internal training. Confidential.</span>
+    <span>The 60% rule: glance at the meter; over 60%, tidy or clear.</span>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+(function(){
+  var WINDOW_TOKENS = 200000;
+  var base = { system:10, claude:3 };
+  var state = { files:0, tools:0, chat:0, mcp:0, skill:0 };
+  var summaries = [];           // each = one compaction sheet (a number)
+
+  var bar      = document.getElementById('bar');
+  var boundary = bar.querySelector('.boundary');
+  var pctNum   = document.getElementById('pctNum');
+  var accDot   = document.getElementById('accDot');
+  var accText  = document.getElementById('accText');
+  var accNote  = document.getElementById('accNote');
+  var tokText  = document.getElementById('tokText');
+  var costText = document.getElementById('costText');
+  var narrate  = document.getElementById('narrate');
+  var tip      = document.getElementById('tip');
+
+  function total(){
+    var s = base.system + base.claude + state.files + state.tools + state.chat + state.mcp + state.skill;
+    for(var i=0;i<summaries.length;i++) s += summaries[i];
+    return s;
+  }
+  function commas(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
+  function showTip(e, label, pct){
+    tip.innerHTML = label + ' <span class="tp">· ' + Math.round(pct) + '%</span>';
+    tip.style.opacity = '1';
+    moveTip(e);
+  }
+  function moveTip(e){ tip.style.left = e.clientX + 'px'; tip.style.top = (e.clientY - 12) + 'px'; }
+  function hideTip(){ tip.style.opacity = '0'; }
+
+  function makeSeg(cls, color, label, pct){
+    var d = document.createElement('div');
+    d.className = 'seg ' + cls;
+    d.style.background = color;
+    d.style.width = pct + '%';
+    d.addEventListener('mouseenter', function(e){ showTip(e, label, pct); });
+    d.addEventListener('mousemove', moveTip);
+    d.addEventListener('mouseleave', hideTip);
+    return d;
+  }
+
+  function render(){
+    // rebuild all segments (keep the boundary marker)
+    var old = bar.querySelectorAll('.seg');
+    for(var i=0;i<old.length;i++) old[i].remove();
+
+    var built = [];
+    built.push(makeSeg('system','var(--ssa-blue)','System prompt', base.system));
+    built.push(makeSeg('claude','var(--blumine)','Project notes (CLAUDE.md)', base.claude));
+    summaries.forEach(function(sz, idx){
+      var color = (idx % 2 === 0) ? '#0a45b5' : '#1356d6';
+      built.push(makeSeg('summary', color, 'Summary sheet ' + (idx+1), sz));
+    });
+    if(state.files) built.push(makeSeg('files','var(--paper-files)','Files it read', state.files));
+    if(state.tools) built.push(makeSeg('tools','var(--paper-tools)','Tool output', state.tools));
+    if(state.chat)  built.push(makeSeg('chat','var(--paper-chat)','Back-and-forth chat', state.chat));
+    if(state.mcp)   built.push(makeSeg('mcp','var(--persimmon)','MCP binder', state.mcp));
+    if(state.skill) built.push(makeSeg('skill','var(--paper-skill)','Skill index card', state.skill));
+
+    built.forEach(function(seg){ bar.insertBefore(seg, boundary); });
+
+    var t = Math.min(total(),100);
+    pctNum.textContent = Math.round(t);
+    tokText.textContent = '≈ ' + commas(Math.round(t/100*WINDOW_TOKENS));
+
+    var dot, label, note, cost;
+    if(t < 60){ dot='var(--green-line)'; label='Fast and accurate'; note='Plenty of room. It finds what you ask for.'; cost='Cheap, fast'; }
+    else if(t < 85){ dot='var(--yellow-line)'; label='Slower — starts missing things'; note='Past 60%. Details in the middle get skipped.'; cost='Noticeably pricier'; }
+    else { dot='var(--red-line)'; label='Slow and unreliable'; note='Near full. It misreads and forgets the middle.'; cost='Expensive — burns usage'; }
+    accDot.style.background = dot; accText.textContent = label; accNote.textContent = note; costText.textContent = cost;
+  }
+
+  function say(html){ narrate.innerHTML = html; }
+  function clampWork(){ var o = total()-100; if(o>0){ state.files -= o; if(state.files<0) state.files=0; } }
+
+  // ----- Run a session -----
+  document.getElementById('work').addEventListener('click', function(){
+    if(total() >= 99){
+      say('Desk is jammed at <b>~100%</b>. Trying to <b>/compact</b> now often fails — no room left to think. Better: <b>clear the desk</b> and carry a sticky note.');
+      return;
+    }
+    state.files += 14; state.tools += 4; state.chat += 4;
+    clampWork(); render();
+    var t = total();
+    if(t < 60) say('Reading files (<b>the biggest pile</b>), running tools, chatting back and forth. Still in the <b>smart zone</b>.');
+    else if(t < 85) say('Over <b>60%</b> now — the <b>dumb zone</b>. Ask for a detail from early on and it starts to fumble.');
+    else say('Desk is buried. Time to <b>tidy</b> or <b>clear</b> — pick one below.');
+  });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    state={files:0,tools:0,chat:0,mcp:0,skill:0}; summaries=[];
+    document.getElementById('mcp').classList.remove('on');
+    document.getElementById('skill').classList.remove('on');
+    document.getElementById('subWrap').classList.remove('show');
+    document.getElementById('subFill').style.width='0';
+    render();
+    say('Fresh desk: just the <b>system prompt</b> and your <b>project notes</b>. Press <b>Keep working</b> to begin.');
+  });
+
+  // ----- Fixes -----
+  document.getElementById('compact').addEventListener('click', function(){
+    var workload = state.files + state.tools + state.chat;
+    if(workload < 6){ say('Nothing new to tidy yet — run a session first, then tidy.'); return; }
+    var nearFull = total() >= 92;
+    // condense the current working pile into a NEW summary sheet that stays on the desk
+    var sheet = Math.max(8, Math.round(workload * 0.30));
+    summaries.push(sheet);
+    state.files=0; state.tools=0; state.chat=0;
+    render();
+    var n = summaries.length;
+    if(nearFull){
+      say('<b>Careful:</b> at near-full, /compact often fails in real life — too little room to summarize. (Demo tidied anyway.) Notice <b>sheet ' + n + '</b> is now part of the desk — tidying shrinks the session, it never empties it.');
+    } else if(n === 1){
+      say('<b>Tidied.</b> The working pile became <b>one summary sheet</b>. Keep working, tidy again, and watch a <b>second sheet</b> appear — the desk keeps creeping up.');
+    } else {
+      say('<b>Tidied again — that’s sheet ' + n + '.</b> Each tidy keeps the gist but leaves a sheet behind, so over a long session the desk still fills. Eventually you <b>clear</b> and start fresh.');
+    }
+  });
+
+  document.getElementById('clear').addEventListener('click', function(){
+    state={files:0,tools:0,chat:0,mcp:0,skill:0}; summaries=[];
+    document.getElementById('mcp').classList.remove('on');
+    document.getElementById('skill').classList.remove('on');
+    render();
+    say('<b>Cleared.</b> Empty desk for a <b>new task</b> — none of the last job’s clutter, summary sheets and all, slowing you down.');
+  });
+
+  document.getElementById('handoff').addEventListener('click', function(){
+    if(total() < 20){ say('Run a session first — then a handoff note is worth writing.'); return; }
+    state={files:0,tools:0,chat:0,mcp:0,skill:0}; summaries=[7];
+    document.getElementById('mcp').classList.remove('on');
+    document.getElementById('skill').classList.remove('on');
+    render();
+    say('<b>Sticky note written.</b> A short prompt captures where you are; a <b>fresh desk</b> starts from just that note. Great when one task is done but the project continues.');
+  });
+
+  // ----- Advanced toggles -----
+  var mcpBtn = document.getElementById('mcp');
+  mcpBtn.addEventListener('click', function(){
+    if(state.mcp===0){ state.mcp=18; mcpBtn.classList.add('on');
+      say('An <b>MCP</b> drops a <b>fat binder</b> on the desk up front — every tool it offers, all the time. <b>~18%</b> gone before you start.');
+    } else { state.mcp=0; mcpBtn.classList.remove('on'); say('MCP unplugged — binder off the desk.'); }
+    render();
+  });
+
+  var skillBtn = document.getElementById('skill');
+  skillBtn.addEventListener('click', function(){
+    if(state.skill===0){ state.skill=3; skillBtn.classList.add('on');
+      say('A <b>Skill</b> is an <b>index card</b>: tiny footprint, and the full instructions only load <b>when actually used</b>. <b>~3%</b>. This is why skills beat MCPs on context.');
+    } else { state.skill=0; skillBtn.classList.remove('on'); say('Skill removed.'); }
+    render();
+  });
+
+  document.getElementById('subagent').addEventListener('click', function(){
+    var wrap=document.getElementById('subWrap'); var fill=document.getElementById('subFill');
+    wrap.classList.add('show'); fill.style.width='0';
+    say('Handed the heavy reading to a <b>subagent</b> — it works on its <b>own desk</b>.');
+    setTimeout(function(){ fill.style.width='90%'; },60);
+    setTimeout(function(){
+      summaries.push(4); render();
+      say('The subagent did the digging on its own desk and handed back <b>just the answer</b> (one small sheet) — your desk barely moved. That’s why subagents keep the main thread sharp and can run in parallel.');
+    },1250);
+  });
+
+  // ----- Legend -----
+  var legendItems=[
+    ['var(--ssa-blue)','System prompt'],
+    ['var(--blumine)','Project notes / CLAUDE.md'],
+    ['#0a45b5','Summary sheet (from /compact)'],
+    ['var(--paper-files)','Files it read (the big one)'],
+    ['var(--paper-tools)','Tool output'],
+    ['var(--paper-chat)','Back-and-forth chat'],
+    ['var(--persimmon)','MCP binder'],
+    ['var(--paper-skill)','Skill index card']
+  ];
+  var lg=document.getElementById('legend');
+  legendItems.forEach(function(it){
+    var d=document.createElement('div'); d.className='li';
+    d.innerHTML='<span class="sw" style="background:'+it[0]+'"></span>'+it[1];
+    lg.appendChild(d);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
